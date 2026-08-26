@@ -47,7 +47,7 @@ jobs:
         fetch-depth: 0  # Full history for git exploration
 
     - name: Run Forge PR Review
-      uses: piyushvikas/demo_cli_agent/actions/forge@v1
+      uses: piyushvikas/demo_cli_agent/actions/forge@v0
       with:
         mode: review_pr
         openai_api_key: ${{ secrets.OPENAI_API_KEY }}
