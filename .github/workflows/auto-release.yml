@@ -2,7 +2,7 @@ name: Auto Tag and Release
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - 'actions/**'
       - '.github/workflows/**'
