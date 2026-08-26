@@ -1,0 +1,59 @@
+name: Forge PR Review
+
+on:
+  workflow_call:
+    inputs:
+      model_name:
+        description: 'OpenAI model to use'
+        required: false
+        type: string
+        default: 'gpt-4o-mini'
+      auto_approve:
+        description: 'Auto-approve high-quality PRs'
+        required: false
+        type: boolean
+        default: false
+      max_iterations:
+        description: 'Max ReAct iterations for exploration'
+        required: false
+        type: number
+        default: 15
+      team_patterns_path:
+        description: 'Path to team coding patterns file'
+        required: false
+        type: string
+        default: '.github/CODING_PATTERNS.md'
+    secrets:
+      OPENAI_API_KEY:
+        description: 'OpenAI API key'
+        required: true
+      FORGE_PAT:
+        description: 'GitHub PAT for cross-repo access. Falls back to GITHUB_TOKEN.'
+        required: false
+
+jobs:
+  review:
+    # Runner: self-hosted Ubuntu (cloud label).  Forge tools assume Linux
+    # shell (bash).  For GitHub-hosted, use 'ubuntu-latest' or 'ubuntu-24.04'.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for git exploration
+
+    - name: Run Forge PR Review
+      uses: piyushvikas/demo_cli_agent/actions/forge@v1
+      with:
+        mode: review_pr
+        openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+        model_name: ${{ inputs.model_name }}
+        github_token: ${{ secrets.FORGE_PAT || secrets.GITHUB_TOKEN }}
+        pr_number: ${{ github.event.pull_request.number }}
+        auto_approve: ${{ inputs.auto_approve }}
+        max_iterations: ${{ inputs.max_iterations }}
+        team_patterns_path: ${{ inputs.team_patterns_path }}

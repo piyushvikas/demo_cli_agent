@@ -1,0 +1,111 @@
+name: 'Forge - AI Coding Assistant'
+description: 'OpenAI-powered coding assistant that reviews PRs using the ReAct pattern'
+author: 'SLG Infrastructure Team'
+
+inputs:
+  mode:
+    description: 'Operation mode: review | analyze (alias: review_pr)'
+    required: true
+  openai_api_key:
+    description: 'OpenAI API key'
+    required: true
+  model_name:
+    description: 'OpenAI model to use'
+    required: false
+    default: 'gpt-4o-mini'
+  github_token:
+    description: 'GitHub token with repo/PR permissions'
+    required: true
+  pr_number:
+    description: 'Pull request number (for review_pr mode)'
+    required: false
+  auto_approve:
+    description: 'Auto-approve trivial changes (docs, typos)'
+    required: false
+    default: 'false'
+  context_paths:
+    description: 'Additional paths to include as context (comma-separated)'
+    required: false
+    default: ''
+  team_patterns_path:
+    description: 'Path to team coding patterns/conventions file'
+    required: false
+    default: '.github/CODING_PATTERNS.md'
+  max_iterations:
+    description: 'Maximum ReAct iterations (thought/action cycles)'
+    required: false
+    default: '15'
+  python_version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+
+outputs:
+  status:
+    description: 'Execution status: success | failure'
+    value: ${{ steps.forge.outputs.status }}
+  summary:
+    description: 'Human-readable summary of actions taken'
+    value: ${{ steps.forge.outputs.summary }}
+  recommendation:
+    description: 'PR review recommendation (for review_pr mode)'
+    value: ${{ steps.forge.outputs.recommendation }}
+  review_comments:
+    description: 'Number of review comments posted'
+    value: ${{ steps.forge.outputs.review_comments }}
+
+runs:
+  using: composite
+  steps:
+    - name: Environment diagnostics
+      shell: bash
+      run: |
+        echo "::group::🔨 Forge Runner Environment"
+        echo "OS       : $(uname -s) $(uname -r)"
+        echo "Arch     : $(uname -m)"
+        echo "Distro   : $(cat /etc/os-release 2>/dev/null | grep PRETTY_NAME | cut -d= -f2 || echo 'N/A')"
+        echo "Python   : $(python3 --version 2>&1 || python --version 2>&1)"
+        echo "Git      : $(git --version)"
+        echo "Shell    : $SHELL"
+        echo "Workspace: $GITHUB_WORKSPACE"
+        echo "Runner OS: $RUNNER_OS"
+        echo "::endgroup::"
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ${{ github.action_path }}/requirements.txt
+
+    - name: Run Forge Agent
+      id: forge
+      shell: bash
+      env:
+        # OpenAI
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        MODEL_NAME: ${{ inputs.model_name }}
+        # GitHub — supports both github.com and GitHub Enterprise
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+        GITHUB_API_URL: ${{ github.api_url }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+        # Mode
+        FORGE_MODE: ${{ inputs.mode }}
+        PR_NUMBER: ${{ inputs.pr_number }}
+        # Config
+        AUTO_APPROVE: ${{ inputs.auto_approve }}
+        CONTEXT_PATHS: ${{ inputs.context_paths }}
+        TEAM_PATTERNS_PATH: ${{ inputs.team_patterns_path }}
+        MAX_ITERATIONS: ${{ inputs.max_iterations }}
+      run: |
+        python ${{ github.action_path }}/scripts/forge_agent.py
+
+branding:
+  icon: 'zap'
+  color: 'orange'

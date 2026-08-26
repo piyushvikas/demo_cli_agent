@@ -1,0 +1,42 @@
+# ──────────────────────────────────────────────────────────────────────
+# Forge Self-Review — ops-factory eats its own dog food
+# ──────────────────────────────────────────────────────────────────────
+# This workflow makes ops-factory use Forge to review its own PRs.
+# Uses `./actions/forge` (local path) so it always tests the code
+# from the same branch being reviewed — no tag required.
+#
+# For OTHER repos, use the reusable workflow instead:
+#   uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v0
+# ──────────────────────────────────────────────────────────────────────
+name: "🔨 Forge Self-Review"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Run Forge Review
+      id: forge
+      uses: ./actions/forge
+      with:
+        mode: review_pr
+        openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+        model_name: gpt-4o-mini
+        github_token: ${{ secrets.FORGE_PAT || secrets.GITHUB_TOKEN }}
+        pr_number: ${{ github.event.pull_request.number }}
+        auto_approve: 'false'
+        max_iterations: '15'
+        team_patterns_path: '.github/CODING_PATTERNS.md'

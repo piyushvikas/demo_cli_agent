@@ -1,0 +1,4 @@
+openai>=1.50.0
+PyGithub>=2.1.0
+httpx>=0.25.0
+tenacity>=8.2.0
