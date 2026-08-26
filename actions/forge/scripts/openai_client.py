@@ -19,8 +19,8 @@ import json
 import os
 from typing import Any
 
-from openai import OpenAI
-from tenacity import retry, stop_after_attempt, wait_exponential
+from openai import AuthenticationError, OpenAI, PermissionDeniedError
+from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_exponential
 
 
 class OpenAIClient:
@@ -48,6 +48,7 @@ class OpenAIClient:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=2, min=4, max=30),
+        retry=retry_if_not_exception_type((AuthenticationError, PermissionDeniedError)),
         reraise=True,
     )
     def generate(
@@ -171,9 +172,11 @@ class OpenAIClient:
 
         oa_tools = []
         for td in tool_declarations:
-            params = td.get("parameters") or {"type": "object", "properties": {}}
-            if "type" not in params:
-                params["type"] = "object"
+            # Copy — td["parameters"] is the tool class's shared class-level dict;
+            # mutating it in place would corrupt every future call for that tool.
+            params = dict(td.get("parameters") or {})
+            params.setdefault("type", "object")
+            params.setdefault("properties", {})
             oa_tools.append({
                 "type": "function",
                 "function": {
