@@ -1,6 +1,6 @@
 # ops-factory
 
-Centralized CI/CD repository for reusable GitHub Actions and workflows.
+Centralized CI/CD repository for reusable GitHub Actions and workflows. --This is just for pushing the code 
 
 > **New to CI/CD?** Start with our [Getting Started Guide](docs/GETTING-STARTED.md) - a beginner-friendly introduction to GitHub Actions and how to use ops-factory.
 
