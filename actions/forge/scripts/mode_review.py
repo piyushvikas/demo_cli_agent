@@ -192,12 +192,21 @@ def _extract_recommendation(text: str) -> str:
         return "REQUEST_CHANGES"
     if "RECOMMENDATION**: APPROVE" in text_upper or "**RECOMMENDATION**: APPROVE" in text_upper:
         return "APPROVE"
-    # Fallback: look for the words
-    if "REQUEST_CHANGES" in text_upper:
-        return "REQUEST_CHANGES"
-    if "APPROVE" in text_upper and "AUTO-APPROVE" not in text_upper:
-        return "APPROVE"
-    return "COMMENT"
+
+    # Fallback: the model didn't follow the "**Recommendation**: X" template
+    # exactly. Pick whichever keyword appears LAST in the text — the
+    # recommendation is always the final field — instead of checking one
+    # keyword before the other, which let an incidental earlier mention of
+    # "REQUEST_CHANGES" (e.g. quoting a prior review) silently win over the
+    # model's actual final verdict.
+    rc_pos = text_upper.rfind("REQUEST_CHANGES")
+    approve_pos = text_upper.rfind("APPROVE")
+    if approve_pos != -1 and text_upper[max(0, approve_pos - 5):approve_pos] == "AUTO-":
+        approve_pos = -1  # that was "AUTO-APPROVE", not a recommendation
+
+    if rc_pos == -1 and approve_pos == -1:
+        return "COMMENT"
+    return "REQUEST_CHANGES" if rc_pos > approve_pos else "APPROVE"
 
 
 def _extract_score(text: str) -> int:
