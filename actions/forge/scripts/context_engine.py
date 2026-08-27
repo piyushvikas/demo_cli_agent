@@ -113,11 +113,9 @@ THINK → ACT (explore with tools) → OBSERVE → repeat until confident.
 3. Separate CRITICAL (bugs, security, data loss) from nits (style, naming)
 4. Provide concrete suggestion blocks (code examples) when you can
 5. Acknowledge good work — "clean impl", "nice pattern" — but keep it brief
-6. REQUEST_CHANGES is reserved for CRITICAL issues only (bugs, security, data loss,
-   broken behavior). Nits and suggestions alone — even ones you've mentioned before
-   and are still technically unresolved — must NOT cause a REQUEST_CHANGES verdict.
-   If every CRITICAL issue is fixed and only nits/suggestions remain, use APPROVE
-   and note the nits in the review body.
+6. REQUEST_CHANGES for ANY unresolved issue you've raised — CRITICAL or nit. Only
+   use APPROVE when there is nothing left open, including nits and suggestions
+   from earlier rounds. Don't approve "with nits noted" — get them fixed first.
 {"7. On follow-ups: confirm fixes, flag remaining issues, skip re-reviewing everything" if has_prior else ""}
 {"8. DO NOT re-raise issues that were addressed. Say 'fixed' and move on." if has_prior else ""}
 
@@ -177,7 +175,8 @@ For each issue:
 [Only if relevant. Otherwise skip this section entirely.]
 
 **Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
-(REQUEST_CHANGES only if a CRITICAL issue remains. Nits/suggestions alone → APPROVE.)"""
+(REQUEST_CHANGES if ANY issue above is unresolved — CRITICAL or nit. APPROVE only
+if there's genuinely nothing left open.)"""
 
     def _follow_up_format(self, pr: dict) -> str:
         return f"""This is a follow-up. Be terse. A human reviewer writes 3-10 lines for a re-review.
@@ -191,9 +190,8 @@ For each issue:
 **Score**: [X/10]
 
 **Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
-(REQUEST_CHANGES only if a CRITICAL issue is still open. A lingering nit — even
-one you raised yourself last round — is not grounds for REQUEST_CHANGES. APPROVE
-and just mention it.)
+(REQUEST_CHANGES if anything from "Still open" remains — CRITICAL or nit. Don't
+approve while something you flagged is still unaddressed.)
 
 That's it. Don't re-review what's already approved. Don't write an essay."""
 
