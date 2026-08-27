@@ -35,22 +35,22 @@ Use this format for commit messages:
 
 ```bash
 # Patch release (v0.1.0 → v0.1.1)
-git commit -m "fix: handle empty response in schema migration"
+git commit -m "fix: handle empty response when parsing Forge's recommendation"
 
 # Minor release (v0.1.1 → v0.2.0)
-git commit -m "feat: add epoch_count parameter to fine-tuning"
+git commit -m "feat: add deterministic secret scanning workflow"
 
 # Major release (v0.2.0 → v1.0.0)
-git commit -m "feat!: migrate to Document AI v2 API
+git commit -m "feat!: change forge-review.yml input structure
 
-BREAKING CHANGE: removed legacy_mode input"
+BREAKING CHANGE: renamed model_name default input"
 ```
 
 ## Release Process
 
-1. Create feature branch from `master`
+1. Create feature branch from `main`
 2. Make changes and commit with conventional messages
-3. Open PR to `master`
+3. Open PR to `main`
 4. After merge, auto-release workflow:
    - Analyzes commit messages
    - Calculates version bump

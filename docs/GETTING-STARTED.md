@@ -312,6 +312,9 @@ jobs:
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FORGE_PAT: ${{ secrets.FORGE_PAT }}
+
+  secret-scan:
+    uses: piyushvikas/demo_cli_agent/.github/workflows/secret-scan.yml@v0
 ```
 
 See [docs/FORGE.md](FORGE.md) for the full Forge documentation.

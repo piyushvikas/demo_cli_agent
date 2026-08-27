@@ -88,6 +88,7 @@ Forge has access to these read-only tools while reviewing a PR:
 
 | Tool | Description | Example |
 |------|-------------|---------|
+| `think` | Explicit reasoning step, no side effects | Plan before acting |
 | `execute` | Run any shell command | `git log --oneline -10`, `npm test` |
 | `read_file` | Read file contents | `read_file('src/main.py', 1, 100)` |
 | `ls` | List directory | `ls('src/')` |
@@ -153,13 +154,37 @@ Forge posts this as a real GitHub PR **review** — `APPROVE`, `REQUEST_CHANGES`
 > **GitHub does not allow a bot to formally APPROVE a PR** when Forge runs
 > with the default `GITHUB_TOKEN` (a deliberate anti self-approval security
 > policy — see [GitHub's docs](https://docs.github.com/rest/pulls/reviews#create-a-review-for-a-pull-request)).
-> When Forge's verdict is APPROVE, it automatically submits a formal
-> `COMMENT`-type review instead — this still correctly clears its own
-> earlier `REQUEST_CHANGES` (GitHub only tracks each reviewer's *latest*
-> review), but the PR won't show the green "Approved" badge. To get real
-> approvals, set `FORGE_PAT` to a Personal Access Token from an account
-> that is **not** the PR author (a PAT from the PR author's own account
-> hits a separate "can't approve your own PR" restriction).
+> When Forge's verdict is APPROVE, it dismisses its own prior
+> `REQUEST_CHANGES` review (if any) via the API, then submits a formal
+> `COMMENT`-type review with the new verdict — the PR won't show the green
+> "Approved" badge, but it becomes mergeable. Dismissing a review on a
+> protected branch itself requires repo-admin rights (or being on the
+> branch's dismiss-allowlist) per GitHub's rules; if the token lacks that,
+> the dismissal is skipped and the prior block may need clearing manually.
+> To get a real green approval, set `FORGE_PAT` to a Personal Access Token
+> from an account that is **not** the PR author (a PAT from the PR
+> author's own account hits a separate "can't approve your own PR" rule).
+
+## 🚦 Review Severity Policy
+
+Every issue Forge raises is tagged with one of three severities:
+
+| Severity | Meaning | Blocks merge? |
+|----------|---------|----------------|
+| `CRITICAL` | Bug, security issue, data loss, broken behavior | Yes — `REQUEST_CHANGES` |
+| `nit` | Real but minor quality issue (style, naming, code smell) | No |
+| `suggestion` | An idea or optional improvement, not a problem with the code as-is | No |
+
+Only an unresolved `CRITICAL` causes `REQUEST_CHANGES`; `nit` and
+`suggestion` are reported but never block. This is enforced twice — once by
+instruction in Forge's prompt, and once deterministically in code
+(`mode_review.py` overrides a claimed `APPROVE` if the review text still
+tags an open `CRITICAL`, regardless of what the model's own verdict says).
+
+Before writing its final review, Forge works through a fixed checklist —
+input validation, bypassed validation, authorization, error handling, logic
+correctness, security, test coverage, and breaking changes — rather than a
+single open-ended "look for bugs" pass.
 
 ## 📝 Team Coding Patterns
 
@@ -236,6 +261,10 @@ This allows Forge to:
 - **Learn** from observations
 - **Iterate** until it has enough context
 
+All model calls use `temperature=0.0` for the most consistent output the
+API allows — LLM output is never perfectly deterministic, but this
+minimizes run-to-run variance in what Forge finds and how it's worded.
+
 ### Built on Best Practices
 
 Inspired by:
@@ -303,8 +332,13 @@ actions/forge/
     ├── github_client.py    # GitHub API (PRs, comments, reactions)
     ├── forge_memory.py     # Persistent git-committed memory (.github/forge/memory.md)
     ├── mode_review.py      # PR review mode handler
+    ├── test_mode_review.py # Unit tests: recommendation parsing, severity override
+    ├── test_github_client.py # Unit tests: APPROVE fallback + stale-review dismissal
     └── test_local.py       # Standalone local test harness (outside GitHub Actions)
 ```
+
+Run the unit tests with `pip install -r requirements.txt pytest && pytest` from
+`actions/forge/scripts/` — they mock the OpenAI/GitHub APIs, no network calls.
 
 ### Design Principles
 
