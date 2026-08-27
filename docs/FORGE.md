@@ -150,6 +150,17 @@ cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
 
 Forge posts this as a real GitHub PR **review** — `APPROVE`, `REQUEST_CHANGES`, or `COMMENT` — with inline comments attached to specific lines. It does **not** merge PRs; merging still requires a human or your repo's own auto-merge setting.
 
+> **GitHub does not allow a bot to formally APPROVE a PR** when Forge runs
+> with the default `GITHUB_TOKEN` (a deliberate anti self-approval security
+> policy — see [GitHub's docs](https://docs.github.com/rest/pulls/reviews#create-a-review-for-a-pull-request)).
+> When Forge's verdict is APPROVE, it automatically submits a formal
+> `COMMENT`-type review instead — this still correctly clears its own
+> earlier `REQUEST_CHANGES` (GitHub only tracks each reviewer's *latest*
+> review), but the PR won't show the green "Approved" badge. To get real
+> approvals, set `FORGE_PAT` to a Personal Access Token from an account
+> that is **not** the PR author (a PAT from the PR author's own account
+> hits a separate "can't approve your own PR" restriction).
+
 ## 📝 Team Coding Patterns
 
 Create `.github/CODING_PATTERNS.md` to teach Forge your conventions:

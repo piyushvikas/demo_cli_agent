@@ -212,16 +212,30 @@ class GitHubClient:
                     "body": c["body"],
                 })
 
-        try:
+        def _submit(review_event: str) -> None:
             if review_comments:
-                pr.create_review(
-                    body=body,
-                    event=event,
-                    comments=review_comments,
-                )
+                pr.create_review(body=body, event=review_event, comments=review_comments)
             else:
-                pr.create_review(body=body, event=event)
+                pr.create_review(body=body, event=review_event)
+
+        try:
+            _submit(event)
         except GithubException as e:
+            if event == "APPROVE":
+                # GitHub blocks the default GITHUB_TOKEN from submitting APPROVE
+                # reviews — a deliberate anti self-approval security policy, not
+                # a bug. Resubmit as a formal COMMENT review instead: GitHub's
+                # "latest review per reviewer" rule means this still supersedes
+                # our own earlier REQUEST_CHANGES and unblocks merge, even
+                # though it can't show the green "Approved" badge.
+                print(f"  ℹ️ APPROVE not permitted for GitHub Actions bots ({e}); submitting as a COMMENT review instead")
+                try:
+                    _submit("COMMENT")
+                    return
+                except GithubException as e2:
+                    print(f"  ⚠️ COMMENT review also failed ({e2}), falling back to plain comment...")
+                    pr.create_issue_comment(body)
+                    return
             # Fall back to simple comment if review fails
             print(f"  ⚠️ Review submission failed ({e}), falling back to comment...")
             pr.create_issue_comment(body)
