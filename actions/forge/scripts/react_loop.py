@@ -98,7 +98,7 @@ class ReActLoop:
                     messages=messages,
                     tools=declarations,
                     system_instruction=system_prompt,
-                    temperature=0.2,
+                    temperature=0.0,
                 )
                 if response["function_calls"] or response["text"]:
                     break
@@ -296,7 +296,7 @@ class ReActLoop:
             messages=messages,
             tools=None,  # No tools — force text response
             system_instruction=system_prompt,
-            temperature=0.2,
+            temperature=0.0,
         )
 
         total_input_tokens += response.get("usage", {}).get("input_tokens", 0)

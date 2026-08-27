@@ -12,7 +12,7 @@ inputs:
   model_name:
     description: 'OpenAI model to use'
     required: false
-    default: 'gpt-4o-mini'
+    default: 'gpt-4o'
   github_token:
     description: 'GitHub token with repo/PR permissions'
     required: true

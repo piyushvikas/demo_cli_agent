@@ -62,10 +62,10 @@ BREAKING CHANGE: removed legacy_mode input"
 
 ```yaml
 # Recommended: Use major version for automatic updates
-uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v0
+uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0
 
 # Strict: Pin to specific version
-uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v0.1.0
+uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0.1.0
 ```
 
 ## Version Lifecycle

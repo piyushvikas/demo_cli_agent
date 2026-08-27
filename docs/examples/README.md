@@ -6,7 +6,7 @@ Copy-paste ready workflow examples for ops-factory.
 
 | Example | Use Case |
 |---------|----------|
-| [forge-review.yml](forge-review.yml) | **3-line** AI code review on every PR |
+| [forge-review.yml](forge-review.yml) | AI code review + deterministic secret scanning on every PR |
 
 ## Setup
 

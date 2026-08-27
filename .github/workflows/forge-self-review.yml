@@ -34,7 +34,7 @@ jobs:
       with:
         mode: review_pr
         openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-        model_name: gpt-4o-mini
+        model_name: gpt-4o
         github_token: ${{ secrets.FORGE_PAT || secrets.GITHUB_TOKEN }}
         pr_number: ${{ github.event.pull_request.number }}
         auto_approve: 'false'
