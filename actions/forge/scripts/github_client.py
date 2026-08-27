@@ -224,11 +224,13 @@ class GitHubClient:
             if event == "APPROVE":
                 # GitHub blocks the default GITHUB_TOKEN from submitting APPROVE
                 # reviews — a deliberate anti self-approval security policy, not
-                # a bug. Resubmit as a formal COMMENT review instead: GitHub's
-                # "latest review per reviewer" rule means this still supersedes
-                # our own earlier REQUEST_CHANGES and unblocks merge, even
-                # though it can't show the green "Approved" badge.
-                print(f"  ℹ️ APPROVE not permitted for GitHub Actions bots ({e}); submitting as a COMMENT review instead")
+                # a bug. A fresh COMMENT-type review does NOT clear an earlier
+                # REQUEST_CHANGES from the same reviewer (verified — GitHub only
+                # clears that block on a real approval or an explicit dismissal).
+                # So: actively dismiss our own prior REQUEST_CHANGES review(s)
+                # via the API, then post a COMMENT review with the new verdict.
+                print(f"  ℹ️ APPROVE not permitted for GitHub Actions bots ({e}); dismissing prior REQUEST_CHANGES and posting a COMMENT review instead")
+                self._dismiss_own_change_requests(pr)
                 try:
                     _submit("COMMENT")
                     return
@@ -239,6 +241,32 @@ class GitHubClient:
             # Fall back to simple comment if review fails
             print(f"  ⚠️ Review submission failed ({e}), falling back to comment...")
             pr.create_issue_comment(body)
+
+    @staticmethod
+    def _dismiss_own_change_requests(pr: PullRequest) -> None:
+        """Dismiss this bot's own prior CHANGES_REQUESTED review(s) on this PR.
+
+        Best-effort: dismissing a review on a protected branch requires repo
+        admin (or being on the branch's explicit dismiss-allowlist) per
+        GitHub's docs, so this may fail for a plain GITHUB_TOKEN — that's not
+        fatal, just means the stale block has to be cleared manually.
+        """
+        try:
+            reviews = list(pr.get_reviews())
+        except GithubException as e:
+            print(f"  ⚠️ Could not list reviews to dismiss ({e})")
+            return
+
+        for review in reviews:
+            if review.state != "CHANGES_REQUESTED":
+                continue
+            if review.user.login != "github-actions[bot]":
+                continue
+            try:
+                review.dismiss("Superseded by a newer Forge review — see below.")
+                print(f"  🗑️ Dismissed stale REQUEST_CHANGES review (id={review.id})")
+            except GithubException as e:
+                print(f"  ⚠️ Could not dismiss review {review.id} ({e}) — likely needs admin/dismiss-allowlist on this protected branch")
 
     def post_pr_comment(self, pr_number: int, body: str) -> None:
         """Post a simple comment on a PR."""
