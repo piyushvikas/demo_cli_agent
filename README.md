@@ -15,6 +15,7 @@ Centralized CI/CD repository for reusable GitHub Actions and workflows. --This i
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
 | `forge-review.yml` | `workflow_call` | 🔨 AI-powered PR code review |
+| `secret-scan.yml` | `workflow_call` | 🔒 Deterministic secret/credential scanning (gitleaks) |
 
 ## Usage
 
@@ -76,7 +77,7 @@ on:
 
 jobs:
   review:
-    uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v1
+    uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FORGE_PAT: ${{ secrets.FORGE_PAT }}

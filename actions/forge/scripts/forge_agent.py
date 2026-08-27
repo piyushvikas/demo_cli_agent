@@ -40,7 +40,7 @@ class ForgeConfig:
     def __init__(self) -> None:
         # OpenAI
         self.openai_api_key: str = os.environ.get("OPENAI_API_KEY", "")
-        self.model_name: str = os.environ.get("MODEL_NAME", "gpt-4o-mini")
+        self.model_name: str = os.environ.get("MODEL_NAME", "gpt-4o")
 
         # GitHub
         self.github_token: str = os.environ["GITHUB_TOKEN"]
@@ -204,7 +204,7 @@ def _update_memory(
             "You maintain a concise memory file for an AI coding assistant. "
             "Return only the updated Markdown content, no code fences."
         ),
-        temperature=0.1,
+        temperature=0.0,
     )
     new_content = response.get("text", "").strip()
     if new_content and len(new_content) > 50:

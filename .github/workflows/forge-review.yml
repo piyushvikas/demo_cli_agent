@@ -7,7 +7,7 @@ on:
         description: 'OpenAI model to use'
         required: false
         type: string
-        default: 'gpt-4o-mini'
+        default: 'gpt-4o'
       auto_approve:
         description: 'Auto-approve high-quality PRs'
         required: false

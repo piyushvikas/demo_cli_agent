@@ -289,13 +289,13 @@ ops-factory provides ready-to-use actions. Here's how to use them:
 
 ```yaml
 steps:
-  - uses: parallelum-tech/ops-factory/actions/ACTION_NAME@v1
+  - uses: piyushvikas/demo_cli_agent/actions/ACTION_NAME@v0
     with:
       input_name: 'value'
       another_input: 'another value'
 ```
 
-The `@v1` means "use version 1" - this ensures your workflow won't break if we update the action.
+The `@v0` means "use the latest v0.x release" - this ensures your workflow won't break if we update the action (a future `@v1` will exist once the API is stable).
 
 ### Example: Forge AI PR Review
 
@@ -308,7 +308,7 @@ on:
 
 jobs:
   review:
-    uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v1
+    uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FORGE_PAT: ${{ secrets.FORGE_PAT }}
@@ -336,7 +336,7 @@ on:
 steps:
   - name: AI code review
     id: review
-    uses: parallelum-tech/ops-factory/actions/forge@v1
+    uses: piyushvikas/demo_cli_agent/actions/forge@v0
     with:
       mode: 'review'
       openai_api_key: ${{ secrets.OPENAI_API_KEY }}

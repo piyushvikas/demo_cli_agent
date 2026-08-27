@@ -43,6 +43,11 @@ jobs:
 
   review:
     needs: acknowledge
-    uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v1
+    uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  # Deterministic secret/credential scanning — a real rule-based tool, not an
+  # LLM. Run this alongside Forge, don't rely on Forge alone to catch secrets.
+  secret-scan:
+    uses: piyushvikas/demo_cli_agent/.github/workflows/secret-scan.yml@v0

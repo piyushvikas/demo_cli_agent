@@ -65,7 +65,7 @@ on:
 
 jobs:
   review:
-    uses: parallelum-tech/ops-factory/.github/workflows/forge-review.yml@v1
+    uses: piyushvikas/demo_cli_agent/.github/workflows/forge-review.yml@v0
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FORGE_PAT: ${{ secrets.FORGE_PAT }}
@@ -181,7 +181,7 @@ Forge reads this file and applies your patterns when reviewing. This is the easi
 
 | Input | Default | Description |
 |-------|---------|-------------|
-| `model_name` | `gpt-4o-mini` | OpenAI model (`gpt-4o` for complex reviews) |
+| `model_name` | `gpt-4o` | OpenAI model (`gpt-4o-mini` for cheaper/faster reviews) |
 | `auto_approve` | `false` | Reserved — not currently wired to any behavior |
 | `max_iterations` | `15` | ReAct loop iterations |
 | `team_patterns_path` | `.github/CODING_PATTERNS.md` | Patterns file |
@@ -234,11 +234,14 @@ Inspired by:
 
 ## 🚀 Advanced Usage
 
-### Using a Stronger Model
+### Using a Cheaper/Faster Model
+
+`gpt-4o` is the default (stronger reasoning, better issue coverage). For lower
+cost/latency on simple repos:
 
 ```yaml
 with:
-  model_name: 'gpt-4o'
+  model_name: 'gpt-4o-mini'
 ```
 
 ### More Exploration Iterations
@@ -254,7 +257,23 @@ with:
 - Code sent to **the OpenAI API** using your own API key (not routed through any other party)
 - Terminal commands run **in isolated CI environment**
 - All actions **logged in GitHub Actions**
-- Forge's review checks for bugs, logic errors, and general security issues, but is **not** a dedicated secret scanner — pair it with a tool like `gitleaks` or `trufflehog` as a separate CI job if hardcoded-secret detection matters to you.
+- Forge's review checks for bugs, logic errors, and general security issues, but is **not** a dedicated secret scanner — pair it with `secret-scan.yml` (see below), a deterministic gitleaks-based job, rather than relying on Forge alone for hardcoded-secret detection.
+
+## 🔒 Deterministic Secret Scanning
+
+`secret-scan.yml` runs [gitleaks](https://github.com/gitleaks/gitleaks) — a
+rule-based scanner, not an LLM — to catch hardcoded secrets/credentials with
+guaranteed, repeatable detection. Add it alongside `forge-review.yml`:
+
+```yaml
+jobs:
+  secret-scan:
+    uses: piyushvikas/demo_cli_agent/.github/workflows/secret-scan.yml@v0
+```
+
+No secrets required — it only reads the repo. Fails the job (non-zero exit)
+if it finds anything, so wire it as a required status check in branch
+protection the same way you would the test suite.
 
 ## 🏗️ Architecture
 
