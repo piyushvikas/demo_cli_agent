@@ -130,6 +130,14 @@ Start by exploring the repository to understand the context before commenting on
     score = _extract_score(review_text)
     inline_comments = _extract_inline_comments(review_text, ctx["files"])
 
+    # Deterministic override: the model is instructed to REQUEST_CHANGES for any
+    # open CRITICAL/nit, but prompt-following isn't guaranteed. Don't trust the
+    # model's own verdict when its own review text tags a CRITICAL or nit issue —
+    # enforce the policy in code instead of hoping it's followed.
+    if recommendation == "APPROVE" and _has_blocking_tag(review_text):
+        print("  ⚠️ Model said APPROVE but review text tags an open CRITICAL/nit — overriding to REQUEST_CHANGES")
+        recommendation = "REQUEST_CHANGES"
+
     print(f"\n  📝 Review: {recommendation} (score: {score}/10)")
     print(f"  💬 Inline comments: {len(inline_comments)}")
 
@@ -207,6 +215,18 @@ def _extract_recommendation(text: str) -> str:
     if rc_pos == -1 and approve_pos == -1:
         return "COMMENT"
     return "REQUEST_CHANGES" if rc_pos > approve_pos else "APPROVE"
+
+
+_BLOCKING_TAG_RE = re.compile(r"\*\*(CRITICAL|nit)\*\*", re.IGNORECASE)
+
+
+def _has_blocking_tag(text: str) -> bool:
+    """True if the review body tags an issue as CRITICAL or nit (per the
+    **CRITICAL**/**nit**/**suggestion** severity format the prompt instructs).
+    Used to override a model-claimed APPROVE deterministically — a "suggestion"
+    tag never matches this, matching the policy that suggestions never block.
+    """
+    return bool(_BLOCKING_TAG_RE.search(text))
 
 
 def _extract_score(text: str) -> int:
