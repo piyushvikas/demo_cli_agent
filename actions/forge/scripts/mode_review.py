@@ -130,10 +130,7 @@ Start by exploring the repository to understand the context before commenting on
     score = _extract_score(review_text)
     inline_comments = _extract_inline_comments(review_text, ctx["files"])
 
-    # Deterministic override: the model is instructed to REQUEST_CHANGES for any
-    # open CRITICAL/nit, but prompt-following isn't guaranteed. Don't trust the
-    # model's own verdict when its own review text tags a CRITICAL or nit issue —
-    # enforce the policy in code instead of hoping it's followed.
+    # Override APPROVE if the review text tags an open CRITICAL/nit issue.
     if recommendation == "APPROVE" and _has_blocking_tag(review_text):
         print("  ⚠️ Model said APPROVE but review text tags an open CRITICAL/nit — overriding to REQUEST_CHANGES")
         recommendation = "REQUEST_CHANGES"
