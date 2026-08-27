@@ -159,9 +159,41 @@ No hardcoded rules. You decide when and what to comment.
 - **Description**: {pr['body'][:2000]}
 
 {self.memory_context}{f"## Additional Context{chr(10)}{extra}" if extra else ""}
-## What To Look For
-Bugs, logic errors, edge cases, security vulnerabilities, performance issues,
-missing error handling, test coverage gaps, breaking changes, style consistency.
+## What To Look For — Work Through EVERY Category Below
+Don't stop after finding one or two issues in whichever category catches
+your eye first. Before you write the Issues section, go through this list
+against the actual diff, category by category — a category with nothing to
+report is fine, but don't skip the check itself:
+
+1. **Input validation** — for every new/changed function or endpoint that
+   takes parameters: what happens on None/null, empty string, zero,
+   negative numbers, out-of-range values, wrong type, or a missing/absent
+   record (e.g. an ID that doesn't exist)? Does it validate BEFORE acting,
+   or silently do the wrong thing?
+2. **Bypassed validation** — does new code duplicate what an existing
+   validated function/helper already does, but go around it (e.g. writing
+   straight to storage instead of calling the function with the checks)?
+   This is a common source of CRITICAL bugs and easy to miss.
+3. **Authorization** — for any endpoint/function that changes state
+   (create, update, delete, transfer, reset, bulk-*), is there any check
+   that the caller is allowed to do this to this specific resource? No
+   check at all is CRITICAL, not a nit.
+4. **Error handling** — are exceptions swallowed silently? Does a failure
+   path return None/False/empty instead of a clear error? Can one failed
+   external call (network, DB, file I/O) crash the whole request?
+5. **Logic correctness** — off-by-one, wrong comparison operator, incorrect
+   calculation, wrong variable referenced, inverted condition.
+6. **Security** — hardcoded secrets/credentials, injection risks, unsafe
+   deserialization, path traversal, missing rate limiting on sensitive
+   actions.
+7. **Test coverage** — does new logic (especially anything flagged above)
+   have a test? A new code path with no test is worth flagging even if the
+   code itself looks correct.
+8. **Breaking changes** — does this change an existing function's
+   signature, return shape, or behavior in a way that could break callers?
+
+Style/naming consistency still matters (tag as nit) but comes after the
+above — don't let an easy style nit substitute for actually checking 1-6.
 
 ## Output Format
 {"### FOLLOW-UP REVIEW (prior reviews exist)" if has_prior else "### INITIAL REVIEW"}
