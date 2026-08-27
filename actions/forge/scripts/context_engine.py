@@ -113,8 +113,13 @@ THINK → ACT (explore with tools) → OBSERVE → repeat until confident.
 3. Separate CRITICAL (bugs, security, data loss) from nits (style, naming)
 4. Provide concrete suggestion blocks (code examples) when you can
 5. Acknowledge good work — "clean impl", "nice pattern" — but keep it brief
-{"6. On follow-ups: confirm fixes, flag remaining issues, skip re-reviewing everything" if has_prior else ""}
-{"7. DO NOT re-raise issues that were addressed. Say 'fixed' and move on." if has_prior else ""}
+6. REQUEST_CHANGES is reserved for CRITICAL issues only (bugs, security, data loss,
+   broken behavior). Nits and suggestions alone — even ones you've mentioned before
+   and are still technically unresolved — must NOT cause a REQUEST_CHANGES verdict.
+   If every CRITICAL issue is fixed and only nits/suggestions remain, use APPROVE
+   and note the nits in the review body.
+{"7. On follow-ups: confirm fixes, flag remaining issues, skip re-reviewing everything" if has_prior else ""}
+{"8. DO NOT re-raise issues that were addressed. Say 'fixed' and move on." if has_prior else ""}
 
 ## GitHub Interaction — Your Choice
 You have tools to interact directly:
@@ -171,7 +176,8 @@ For each issue:
 ### Security
 [Only if relevant. Otherwise skip this section entirely.]
 
-**Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT"""
+**Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
+(REQUEST_CHANGES only if a CRITICAL issue remains. Nits/suggestions alone → APPROVE.)"""
 
     def _follow_up_format(self, pr: dict) -> str:
         return f"""This is a follow-up. Be terse. A human reviewer writes 3-10 lines for a re-review.
@@ -185,6 +191,9 @@ For each issue:
 **Score**: [X/10]
 
 **Recommendation**: APPROVE | REQUEST_CHANGES | COMMENT
+(REQUEST_CHANGES only if a CRITICAL issue is still open. A lingering nit — even
+one you raised yourself last round — is not grounds for REQUEST_CHANGES. APPROVE
+and just mention it.)
 
 That's it. Don't re-review what's already approved. Don't write an essay."""
 
