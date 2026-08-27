@@ -56,8 +56,8 @@ def test_has_blocking_tag_critical():
     assert _has_blocking_tag("**CRITICAL** `file.py` L10\nSQL injection risk") is True
 
 
-def test_has_blocking_tag_nit():
-    assert _has_blocking_tag("**nit** `file.py` L5\nRename this variable") is True
+def test_has_blocking_tag_nit_never_blocks():
+    assert _has_blocking_tag("**nit** `file.py` L5\nRename this variable") is False
 
 
 def test_has_blocking_tag_suggestion_never_blocks():
@@ -70,4 +70,8 @@ def test_has_blocking_tag_no_issues():
 
 def test_has_blocking_tag_case_insensitive():
     assert _has_blocking_tag("**critical** `file.py` L1\nbug") is True
-    assert _has_blocking_tag("**NIT** `file.py` L1\nstyle") is True
+
+
+def test_has_blocking_tag_mixed_nits_and_suggestions_still_false():
+    text = "**nit** `a.py` L1\nstyle\n\n**suggestion** `b.py` L2\nidea\n\nRecommendation: APPROVE"
+    assert _has_blocking_tag(text) is False
