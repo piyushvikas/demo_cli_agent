@@ -29,8 +29,9 @@ Any LLM client (`openai_client.py` today) must return the exact dict shape `reac
 
 ## Testing
 
-- No unit test suite exists yet for `actions/forge/scripts/` — `test_local.py` is a manual integration harness (`python test_local.py` against a real `OPENAI_API_KEY`), not something CI runs automatically. If you add real unit tests, they should be able to run without hitting the OpenAI API (mock `OpenAIClient.generate`).
-- Any change to `openai_client.py`'s message-building or response-parsing should be verified against `test_local.py`'s function-calling and ReAct-loop tests before merging — that's the closest thing this repo has to a regression check today.
+- `test_mode_review.py` and `test_github_client.py` are real unit tests (pytest, mocked APIs, no network calls) covering the pure-logic parts: recommendation parsing, the severity-based blocking override, and the PR review-posting fallback chain. Run with `pip install -r requirements.txt pytest && pytest` from `actions/forge/scripts/`.
+- `test_local.py` is a separate manual integration harness (`python test_local.py` against a real `OPENAI_API_KEY`) — not run in CI, use it to sanity-check actual OpenAI connectivity and tool execution end-to-end.
+- Any change to `mode_review.py`'s text-parsing logic (`_extract_recommendation`, `_has_blocking_tag`) or `github_client.py`'s `post_pr_review` fallback chain must come with a passing unit test — these are exactly the places where a silent regression previously caused real, hard-to-diagnose problems (a misread verdict, an unrecoverable stuck PR review).
 
 ## GitHub Actions / Workflow Conventions
 

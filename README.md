@@ -1,6 +1,6 @@
 # ops-factory
 
-Centralized CI/CD repository for reusable GitHub Actions and workflows. --This is just for pushing the code 
+Centralized CI/CD repository for reusable GitHub Actions and workflows.
 
 > **New to CI/CD?** Start with our [Getting Started Guide](docs/GETTING-STARTED.md) - a beginner-friendly introduction to GitHub Actions and how to use ops-factory.
 
@@ -35,7 +35,9 @@ This repository uses semantic versioning with conventional commits. See [docs/VE
 
 ```
 ops-factory/
-├── .github/workflows/     # Auto-release + Reusable workflows
+├── .github/
+│   ├── workflows/         # Auto-release + Reusable workflows
+│   └── CODING_PATTERNS.md # This repo's own conventions, read by Forge
 ├── actions/               # Composite actions
 │   └── forge/             # 🔨 AI coding assistant
 └── docs/
@@ -81,7 +83,14 @@ jobs:
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FORGE_PAT: ${{ secrets.FORGE_PAT }}
+
+  secret-scan:
+    uses: piyushvikas/demo_cli_agent/.github/workflows/secret-scan.yml@v0
 ```
+
+`secret-scan.yml` needs no secrets — it's a deterministic gitleaks scan, not
+an LLM, and complements Forge rather than relying on it to catch hardcoded
+credentials.
 
 ### Required Secrets (set once at org level)
 
