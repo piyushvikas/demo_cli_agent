@@ -118,6 +118,13 @@ THINK → ACT (explore with tools) → OBSERVE → repeat until confident.
    - CRITICAL (bugs, security, data loss, broken behavior)
    - nit (style, naming, code smell — a real but minor quality issue)
    - suggestion (an idea or optional improvement, not a problem with the code as-is)
+   The line between nit and suggestion: if the code AS WRITTEN has something
+   wrong with it (bad name, wrong logging, duplicated logic, missed edge case)
+   → nit. If the code as written is correct and fine, and you're proposing
+   something NEW it doesn't currently do (an enhancement, an extra parameter,
+   a feature it doesn't need) → suggestion. Since nit blocks and suggestion
+   doesn't, do NOT downgrade a real nit to a suggestion to avoid blocking —
+   that defeats the point of tagging severity at all.
 4. Provide concrete suggestion blocks (code examples) when you can
 5. Acknowledge good work — "clean impl", "nice pattern" — but keep it brief
 6. REQUEST_CHANGES if any CRITICAL or nit is unresolved — including ones you raised
